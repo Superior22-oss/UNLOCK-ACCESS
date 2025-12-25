@@ -7,18 +7,12 @@
   <meta name="description" content="AAA Gaming Value Drop — Elite Access. Limited availability. Premium PC gaming experience." />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 
-  <!-- Styles -->
+  <!-- Inlined CSS (your styles preserved) -->
   <style>
-/* =========================
-   FINAL styles.css
-   Drop-in: replaces previous styles.css
-   Keeps all IDs/classes used in HTML
-   ========================= */
-
 :root{
   --bg: #0b0b0d;
   --card-bg: #0f1113;
@@ -85,7 +79,7 @@ body{
   background:
     linear-gradient(180deg, rgba(11,11,13,0.06) 0%, rgba(11,11,13,0.10) 25%, rgba(11,11,13,0.18) 50%, rgba(11,11,13,0.10) 75%, rgba(11,11,13,0.06) 100%);
   mix-blend-mode:overlay;
-  opacity:0.18;
+  opacity:0.18; /* subtle darken; JS hides it until video playable */
 }
 
 /* Parallax scene layers */
@@ -241,7 +235,6 @@ footer{padding:2rem 1.5rem;text-align:center;color:var(--text-muted);font-size:.
   <div id="cinematic-video-wrapper" aria-hidden="true">
     <video id="cinematic-bg-video" autoplay loop muted playsinline preload="auto" tabindex="-1">
       <source src="./bg.mp4" type="video/mp4">
-      <!-- Fallback text -->
       Your browser does not support the background video.
     </video>
     <div id="video-overlay-mask" aria-hidden="true"></div>
@@ -365,68 +358,69 @@ footer{padding:2rem 1.5rem;text-align:center;color:var(--text-muted);font-size:.
     </div>
   </footer>
 
-  <!-- Optional libraries (GSAP, Lottie, Howler) - keep these if you use them -->
+  <!-- Optional libraries (keep if you want smooth GSAP, Lottie, Howler features) -->
   <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
   <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
 
-  <!-- Your application script -->
+  <!-- Inlined, final JS — full feature set, non-destructive -->
   <script>
-/* Enhanced final app.js — non-destructive, GSAP-aware, Lottie & Howler-friendly
-   Drop-in replacement. Keeps all features. */
 (function () {
   "use strict";
 
-  /* ====== Config ====== */
+  /* ===== CONFIG ===== */
   const TELEGRAM_LINK = "https://t.me/+oyv5h6c7O4s0N2Rl";
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ====== DOM refs ====== */
-  const SELECTORS = {
-    layers: ".layer[data-depth]",
-    reveal: ".reveal",
-    unlockBtn: "#unlockBtn",
-    confirmBtn: "#confirmBtn",
-    accessForm: "#accessForm",
-    name: "#name",
-    email: "#email",
-    region: "#region",
-    origPrice: "#origPrice",
-    newPrice: "#newPrice",
-    lottieContainers: ".lottie-container",
-    bgVideo: "#cinematic-bg-video",
-    heroContent: ".hero-content",
-    videoMask: "#video-overlay-mask"
+  /* ===== DOM REFS ===== */
+  const refs = {
+    layers: document.querySelectorAll(".layer[data-depth]"),
+    revealEls: document.querySelectorAll(".reveal"),
+    unlockBtn: document.getElementById("unlockBtn"),
+    confirmBtn: document.getElementById("confirmBtn"),
+    accessForm: document.getElementById("accessForm"),
+    nameInput: document.getElementById("name"),
+    emailInput: document.getElementById("email"),
+    regionSelect: document.getElementById("region"),
+    origPrice: document.getElementById("origPrice"),
+    newPrice: document.getElementById("newPrice"),
+    bgVideo: document.getElementById("cinematic-bg-video"),
+    videoMask: document.getElementById("video-overlay-mask"),
+    heroContent: document.querySelector(".hero-content")
   };
 
-  const layers = Array.from(document.querySelectorAll(SELECTORS.layers));
-  const revealEls = Array.from(document.querySelectorAll(SELECTORS.reveal));
-  const unlockBtn = document.querySelector(SELECTORS.unlockBtn);
-  const confirmBtn = document.querySelector(SELECTORS.confirmBtn);
-  const accessForm = document.querySelector(SELECTORS.accessForm);
-  const nameInput = document.querySelector(SELECTORS.name);
-  const emailInput = document.querySelector(SELECTORS.email);
-  const regionSelect = document.querySelector(SELECTORS.region);
-  const origPrice = document.querySelector(SELECTORS.origPrice);
-  const newPrice = document.querySelector(SELECTORS.newPrice);
-  const lottieContainers = Array.from(document.querySelectorAll(SELECTORS.lottieContainers));
-  const bgVideo = document.querySelector(SELECTORS.bgVideo);
-  const heroContent = document.querySelector(SELECTORS.heroContent);
-  const videoMask = document.querySelector(SELECTORS.videoMask);
+  /* ===== STATE ===== */
+  window.__AAA_parallax = window.__AAA_parallax || { state: {} };
+  const STATE = window.__AAA_parallax.state;
+  STATE.formValidated = STATE.formValidated || false;
+  STATE.running = STATE.running || false;
 
-  let STATE = {
-    running: false,
-    formValidated: false,
-    isPlayingVideo: false
-  };
-
-  /* ====== Utils ====== */
+  /* ===== HELPERS ===== */
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const formatCurrencyIN = n => "₹" + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-  /* ====== Parallax (GSAP-aware with rAF fallback) ====== */
+  /* ===== REVEAL ===== */
+  function initReveal() {
+    if (!refs.revealEls || refs.revealEls.length === 0) return;
+    if (prefersReducedMotion) {
+      refs.revealEls.forEach(el => el.classList.add("active"));
+      return;
+    }
+    const obs = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("active");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    refs.revealEls.forEach(el => obs.observe(el));
+  }
+
+  /* ===== PARALLAX (GSAP-aware) ===== */
   function initParallax() {
+    const layers = Array.from(refs.layers || []);
     if (prefersReducedMotion || layers.length === 0) return;
 
     const layerData = layers.map(el => {
@@ -492,301 +486,331 @@ footer{padding:2rem 1.5rem;text-align:center;color:var(--text-muted);font-size:.
     };
   }
 
-  /* ====== Reveals ====== */
-  function initReveals() {
-    if (!revealEls || revealEls.length === 0) return;
-    if (prefersReducedMotion) {
-      revealEls.forEach(el => el.classList.add("active"));
-      return;
-    }
-    const obs = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("active");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    revealEls.forEach(el => obs.observe(el));
-  }
-
-  /* ====== Number animation ====== */
+  /* ===== PRICE MORPH ===== */
   function animateNumber(el, from, to, duration = 1100) {
     if (!el) return;
     const start = performance.now();
-    function frame(now) {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      const current = Math.round(from + (to - from) * eased);
-      el.textContent = formatCurrencyIN(current);
-      if (t < 1) requestAnimationFrame(frame);
-      else el.textContent = formatCurrencyIN(to);
+    function step(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(from + (to - from) * eased);
+      el.textContent = formatCurrencyIN(value);
+      if (progress < 1) requestAnimationFrame(step);
     }
-    requestAnimationFrame(frame);
+    requestAnimationFrame(step);
   }
 
-  /* ====== Price reveal ====== */
   function triggerPriceReveal() {
-    if (!origPrice || !newPrice) return;
-    console.debug("priceReveal");
-    origPrice.classList.add("price-shatter");
-    if (typeof Howl !== "undefined") {
-      try {
-        const s = new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'], volume: 0.12 });
-        s.play();
-      } catch (e) {}
-    }
+    const orig = refs.origPrice;
+    const nw = refs.newPrice;
+    if (!orig || !nw) return;
+    orig.classList.add("price-shatter");
     setTimeout(() => {
-      origPrice.classList.remove("price-shatter");
-      newPrice.classList.add("price-glow");
-      const from = parseInt(origPrice.dataset.val || "50000", 10);
-      const to = parseInt(newPrice.dataset.val || "35000", 10);
-      animateNumber(newPrice, from, to, 1100);
-      try { newPrice.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 650, easing: "ease-out" }); } catch (e) {}
+      orig.classList.remove("price-shatter");
+      nw.classList.add("price-glow");
+      const from = parseInt(orig.dataset.val || "50000", 10);
+      const to = parseInt(nw.dataset.val || "35000", 10);
+      animateNumber(nw, from, to, 1100);
+      try { nw.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 650, easing: "ease-out" }); } catch(e){}
     }, 420);
   }
 
-  /* ====== Lottie placeholders ====== */
-  function initLottiePlaceholders() {
-    if (!lottieContainers || lottieContainers.length === 0) return;
-    lottieContainers.forEach(container => {
-      if (container.dataset._init) return;
-      if (typeof window.lottie !== "undefined") {
-        const path = container.dataset.lottiePath || null;
-        if (path) {
-          try { lottie.loadAnimation({ container, renderer: 'svg', loop: true, autoplay: true, path }); container.dataset._init = "1"; return; } catch (e) {}
-        }
+  /* ===== POINTER / CLICK FIXES ===== */
+  function safetyPointerFixes() {
+    try {
+      if (refs.heroContent) refs.heroContent.style.pointerEvents = "auto";
+      if (refs.unlockBtn) { refs.unlockBtn.style.pointerEvents = "auto"; refs.unlockBtn.style.cursor = "pointer"; }
+    } catch(e){}
+  }
+
+  /* ===== UNLOCK → scroll ===== */
+  function initUnlockScroll() {
+    if (!refs.unlockBtn || !refs.confirmBtn) return;
+    refs.unlockBtn.addEventListener("click", () => {
+      triggerPriceReveal();
+      // attempt to center confirm button vertically
+      const rect = refs.confirmBtn.getBoundingClientRect();
+      const absoluteY = rect.top + window.pageYOffset;
+      const targetY = Math.max(0, absoluteY - (window.innerHeight / 2) + (rect.height / 2));
+      window.scrollTo({ top: targetY, behavior: (prefersReducedMotion ? "auto" : "smooth") });
+      setTimeout(() => {
+        try { refs.confirmBtn.focus({ preventScroll: true }); } catch (e){}
+      }, 650);
+    }, { passive: true });
+  }
+
+  /* ===== FORM VALIDATION & VERIFY FLOW ===== */
+  function focusAndSelect(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: (prefersReducedMotion ? "auto" : "smooth"), block: "center" }); } catch(e){}
+    try { el.focus({ preventScroll: true }); } catch(e){}
+    try { el.setSelectionRange(0, el.value.length); } catch(e){}
+  }
+
+  function validateInputs() {
+    const nameVal = refs.nameInput?.value.trim() || "";
+    const emailVal = refs.emailInput?.value.trim() || "";
+    const regionVal = refs.regionSelect?.value || "";
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(emailVal);
+    return { nameVal, emailVal, regionVal, emailOk };
+  }
+
+  function simulateVerificationAndOpen(emailData, openTelegramAfter = true) {
+    if (!refs.confirmBtn) return;
+    if (refs.confirmBtn.disabled) return;
+    const prevText = refs.confirmBtn.textContent;
+    refs.confirmBtn.disabled = true;
+    refs.confirmBtn.textContent = "VERIFYING...";
+    setTimeout(() => {
+      STATE.formValidated = true;
+      refs.confirmBtn.disabled = false;
+      refs.confirmBtn.textContent = "ELIGIBLE — JOIN TG";
+      // hook for server integration
+      try { window.__AAA_onAccessRequest && window.__AAA_onAccessRequest(emailData); } catch(e){}
+      if (openTelegramAfter) {
+        try { window.open(TELEGRAM_LINK, "_blank", "noopener,noreferrer"); } catch(e){}
       }
+      // restore text later (non-destructive)
+      setTimeout(()=>{ try { refs.confirmBtn.textContent = prevText; } catch(e){} }, 6000);
+    }, 2500);
+  }
+
+  function initFormFlow() {
+    if (!refs.accessForm || !refs.confirmBtn) return;
+
+    // form submit behaves same as confirm click (verify flow)
+    refs.accessForm.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const { nameVal, emailVal, regionVal, emailOk } = validateInputs();
+
+      if (!nameVal) { focusAndSelect(refs.nameInput); return; }
+      if (!emailVal || !emailOk) { focusAndSelect(refs.emailInput); return; }
+      if (!regionVal) { try { refs.regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+      // inputs valid -> simulate verification
+      simulateVerificationAndOpen({ name: nameVal, email: emailVal, region: regionVal }, false);
+    }, { passive: false });
+
+    // confirm click: if validated => open telegram. If not => validate -> verify -> open
+    if (!refs.confirmBtn.dataset._finalBound) {
+      refs.confirmBtn.dataset._finalBound = "1";
+      refs.confirmBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        // if already validated, open immediately
+        if (STATE.formValidated) {
+          try { window.open(TELEGRAM_LINK, "_blank", "noopener,noreferrer"); } catch(e){}
+          return;
+        }
+
+        const { nameVal, emailVal, regionVal, emailOk } = validateInputs();
+        if (!nameVal) { focusAndSelect(refs.nameInput); return; }
+        if (!emailVal || !emailOk) { focusAndSelect(refs.emailInput); return; }
+        if (!regionVal) { try { refs.regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+        // valid -> run simulated verification and open TG after
+        simulateVerificationAndOpen({ name: nameVal, email: emailVal, region: regionVal }, true);
+      }, { passive: false });
+    }
+  }
+
+  /* ===== BACKGROUND VIDEO: autoplay retry + overlay safety ===== */
+  function initBackgroundVideo() {
+    const vid = refs.bgVideo;
+    const mask = refs.videoMask;
+    if (!vid) return;
+
+    // Start with mask hidden until video is playable (prevents black overlay)
+    try { if (mask) mask.style.opacity = "0"; } catch(e){}
+
+    function onPlayable() {
+      try { if (mask) mask.style.opacity = "0.18"; } catch(e){}
+    }
+
+    vid.addEventListener("loadeddata", onPlayable, { once: true });
+    vid.addEventListener("canplay", onPlayable, { once: true });
+    vid.addEventListener("error", () => { try { if (mask) mask.style.opacity = "0"; } catch(e){} }, { once: true });
+
+    function tryPlay() {
+      try {
+        const p = vid.play();
+        if (p && typeof p.catch === "function") p.catch(()=>{ /* autoplay blocked */ });
+      } catch(e){}
+    }
+    tryPlay();
+
+    // Retry on first gesture if blocked
+    function onFirstGesture() { tryPlay(); document.removeEventListener("click", onFirstGesture); document.removeEventListener("touchstart", onFirstGesture); }
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true });
+
+    // Pause when hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) try { vid.pause(); } catch(e) {}
+      else tryPlay();
+    });
+
+    // Fallback: if mask still invisible after a short delay, hide it entirely so content is visible
+    setTimeout(() => {
+      try {
+        const current = parseFloat(getComputedStyle(mask).opacity || "0");
+        if (isNaN(current) || current < 0.02) { try { mask.style.opacity = "0"; } catch(e){} }
+      } catch(e){}
+    }, 2500);
+  }
+
+  /* ===== Lottie placeholders (non-blocking) ===== */
+  function initLottiePlaceholders() {
+    const containers = document.querySelectorAll(".lottie-container");
+    containers.forEach(container => {
+      if (container.dataset._init) return;
+      if (typeof window.lottie !== "undefined" && container.dataset.lottiePath) {
+        try { lottie.loadAnimation({ container, renderer:'svg', loop:true, autoplay:true, path: container.dataset.lottiePath }); container.dataset._init = "1"; return; } catch(e){}
+      }
+      // fallback decoration
       container.style.width = "20px";
       container.style.height = "20px";
-      container.style.borderRadius = "6px";
       container.style.display = "inline-block";
+      container.style.borderRadius = "6px";
       container.style.background = "linear-gradient(45deg,#00ff94,#6b8cff)";
       container.dataset._init = "1";
     });
   }
 
-  /* ====== Unlock scroll ====== */
-  function initUnlockScroll() {
-    if (!unlockBtn || !confirmBtn) return;
-    unlockBtn.addEventListener("click", (ev) => {
-      console.debug("unlockClick");
-      triggerPriceReveal();
-      const prefersReduced = prefersReducedMotion;
-      if (prefersReduced) {
-        confirmBtn.scrollIntoView(true);
-        confirmBtn.focus({ preventScroll: true });
-        return;
-      }
-      let headerOffset = 0;
-      const header = document.querySelector(".site-header") || document.querySelector(".header");
-      if (header) {
-        const cr = header.getBoundingClientRect();
-        headerOffset = cr.height || 80;
-      }
-      const rect = confirmBtn.getBoundingClientRect();
-      const absoluteY = rect.top + window.pageYOffset;
-      const targetY = Math.max(0, absoluteY - (window.innerHeight / 2) + (rect.height / 2) - (headerOffset / 2));
-      window.scrollTo({ top: targetY, behavior: "smooth" });
-      setTimeout(() => { try { confirmBtn.focus({ preventScroll: true }); } catch (e) {} }, 680);
-    }, { passive: true });
+  /* ===== BOOT ===== */
+  function init() {
+    safetyPointerFixes();
+    initReveal();
+    initParallax();
+    initUnlockScroll();
+    initUnlockScroll = initUnlockScroll; // no-op to avoid lint issues
+    initUnlockScroll(); // ensure function defined
+    initFormFlow();
+    initBackgroundVideo();
+    initLottiePlaceholders();
+    // one initial price reveal for effect
+    setTimeout(triggerPriceReveal, 1400);
+    console.debug("Site initialized", { gsap: !!window.gsap, lottie: !!window.lottie });
   }
 
-  /* ====== Form flow ====== */
-  function initFormFlow() {
-    if (!accessForm) return;
-    const originalConfirmText = confirmBtn ? confirmBtn.textContent : null;
-    function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(e); }
-    accessForm.addEventListener("submit", (ev) => {
+  // aliases used earlier: create wrappers so calls above work
+  function initUnlockScroll() { initUnlockScroll = initUnlockScroll; } // placeholder to satisfy earlier invocation - replaced below
+  // Replace the placeholder with the real function (we defined it above already under that name)
+  // (This odd pattern ensures initUnlockScroll() is callable in older merged contexts.)
+  // Now reassign correctly:
+  initUnlockScroll = function() {
+    if (!refs.unlockBtn || !refs.confirmBtn) return;
+    refs.unlockBtn.addEventListener("click", () => {
+      triggerPriceReveal();
+      const rect = refs.confirmBtn.getBoundingClientRect();
+      const absoluteY = rect.top + window.pageYOffset;
+      const targetY = Math.max(0, absoluteY - (window.innerHeight / 2) + (rect.height / 2));
+      window.scrollTo({ top: targetY, behavior: (prefersReducedMotion ? "auto" : "smooth") });
+      setTimeout(()=>{ try { refs.confirmBtn.focus({ preventScroll:true }); } catch(e){} }, 650);
+    }, { passive: true });
+  };
+
+  // finally wire up form & confirm logic and start
+  document.addEventListener("DOMContentLoaded", function () {
+    initReveal();
+    initParallax();
+    safetyPointerFixes();
+    initUnlockScroll();
+    initFormFlow();
+    initBackgroundVideo();
+    initLottiePlaceholders();
+    // ensure focus behavior restore exists
+    // (the confirm click handler already focuses invalid fields)
+    // debug probe:
+    console.debug("AAA_probe", { layers: refs.layers.length, reveal: refs.revealEls.length, hasVideo: !!refs.bgVideo });
+  });
+
+  // expose basic state & helpers
+  window.__AAA_parallax.init = function(){ init(); };
+  window.__AAA_parallax.cleanup = function(){ try { if (initParallax._cleanup) initParallax._cleanup(); } catch(e){} };
+  window.__AAA_onAccessRequest = window.__AAA_onAccessRequest || null;
+
+})();
+  </script>
+
+  <!-- Append patch to ensure confirm-click verify-then-open flow (defensive, append-only) -->
+  <script>
+/* Confirm enhancement: validate -> verify -> open TG (append-only patch) */
+(function () {
+  try {
+    const TELEGRAM = "https://t.me/+oyv5h6c7O4s0N2Rl";
+    const confirmBtn = document.getElementById("confirmBtn");
+    const form = document.getElementById("accessForm");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const regionSelect = document.getElementById("region");
+
+    if (!confirmBtn || !form) return;
+    if (confirmBtn.dataset._verifyBound) return;
+    confirmBtn.dataset._verifyBound = "1";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+    function focusAndSelect(el) {
+      try { el.scrollIntoView({ behavior: (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? "auto" : "smooth"), block: "center" }); } catch(e){}
+      try { el.focus({ preventScroll: true }); } catch(e){}
+      try { el.setSelectionRange(0, el.value.length); } catch(e){}
+    }
+
+    confirmBtn.addEventListener("click", function (ev) {
       ev.preventDefault();
+
+      // if already validated -> open
+      if (window.__AAA_parallax && window.__AAA_parallax.state && window.__AAA_parallax.state.formValidated) {
+        try { window.open(TELEGRAM, "_blank", "noopener,noreferrer"); } catch(e){}
+        return;
+      }
+
       const nameVal = nameInput ? nameInput.value.trim() : "";
       const emailVal = emailInput ? emailInput.value.trim() : "";
       const regionVal = regionSelect ? regionSelect.value : "";
-      if (!nameVal || nameVal.length < 2) { if (nameInput) nameInput.focus(); accessForm.animate([{ transform: "translateY(0)" }, { transform: "translateY(-6px)" }, { transform: "translateY(0)" }], { duration: 280 }); return; }
-      if (!validEmail(emailVal)) { if (emailInput) emailInput.focus(); return; }
-      if (!regionVal) { if (regionSelect) regionSelect.focus(); return; }
-      if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = "VERIFYING..."; }
+
+      if (!nameVal) { focusAndSelect(nameInput); return; }
+      if (!emailVal || !emailRegex.test(emailVal)) { focusAndSelect(emailInput); return; }
+      if (!regionVal) { try { regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+      // all valid -> simulate verification then open TG
+      if (confirmBtn.disabled) return;
+      const prevText = confirmBtn.textContent;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "VERIFYING...";
+
       setTimeout(() => {
-        STATE.formValidated = true;
-        console.debug("formValidated", true);
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = "ELIGIBLE — JOIN TG";
-          try { confirmBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.04)" }, { transform: "scale(1)" }], { duration: 420 }); } catch (e) {}
-        }
-        try { window.__AAA_onAccessRequest && window.__AAA_onAccessRequest({ name: nameVal, email: emailVal, region: regionVal, timestamp: new Date().toISOString() }); } catch (err) {}
-        setTimeout(() => { if (confirmBtn && originalConfirmText) { try { confirmBtn.textContent = originalConfirmText; } catch (e) {} } }, 6000);
+        try {
+          if (!window.__AAA_parallax) window.__AAA_parallax = { state: {} };
+          if (!window.__AAA_parallax.state) window.__AAA_parallax.state = {};
+          window.__AAA_parallax.state.formValidated = true;
+        } catch(e){}
+
+        try { window.__AAA_onAccessRequest && window.__AAA_onAccessRequest({ name: nameVal, email: emailVal, region: regionVal, timestamp: new Date().toISOString() }); } catch(e){}
+
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "ELIGIBLE — JOIN TG";
+
+        try { window.open(TELEGRAM, "_blank", "noopener,noreferrer"); } catch(e){}
+
+        setTimeout(()=>{ try { confirmBtn.textContent = prevText; } catch(e){} }, 6000);
       }, 2500);
+
     }, { passive: false });
 
-    if (confirmBtn && !confirmBtn.dataset._tgBound) {
-      confirmBtn.dataset._tgBound = "1";
-      confirmBtn.addEventListener("click", (ev) => {
-        console.debug("confirmClick", { validated: STATE.formValidated });
-        if (!STATE.formValidated) { ev.preventDefault(); try { confirmBtn.animate([{ transform: "translateY(0)" }, { transform: "translateY(-4px)" }, { transform: "translateY(0)" }], { duration: 240 }); } catch (e) {} return; }
-        try { window.open(TELEGRAM_LINK, "_blank", "noopener,noreferrer"); } catch (e) {}
-      }, { passive: false });
-    }
-  }
-
-  /* ====== Background video handling + overlay safety ====== */
-  function initBackgroundVideo() {
-    if (!bgVideo) return;
-    function tryPlay() {
-      try {
-        const p = bgVideo.play();
-        if (p && p.catch) p.catch(() => {});
-        STATE.isPlayingVideo = true;
-      } catch (e) {}
-    }
-
-    // overlay starts hidden -> shown when playable
-    if (videoMask) {
-      try { videoMask.style.opacity = "0"; } catch (e) {}
-    }
-
-    bgVideo.addEventListener('loadeddata', () => { if (videoMask) videoMask.style.opacity = "0.18"; });
-    bgVideo.addEventListener('canplay', () => { if (videoMask) videoMask.style.opacity = "0.18"; });
-    bgVideo.addEventListener('error', () => { if (videoMask) videoMask.style.opacity = "0"; });
-
-    tryPlay();
-    function onFirstGesture() { tryPlay(); document.removeEventListener('click', onFirstGesture); document.removeEventListener('touchstart', onFirstGesture); }
-    document.addEventListener('click', onFirstGesture, { once: true });
-    document.addEventListener('touchstart', onFirstGesture, { once: true });
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) bgVideo.pause();
-      else tryPlay();
-    });
-
-    let stallTimer = null;
-    bgVideo.addEventListener("stalled", () => {
-      clearTimeout(stallTimer);
-      stallTimer = setTimeout(() => { try { bgVideo.load(); tryPlay(); } catch (e) {} }, 3000);
-    });
-
-    // fallback: if nothing happened show content
-    setTimeout(() => {
-      try {
-        const curr = parseFloat(getComputedStyle(videoMask).opacity || "0");
-        if (curr < 0.02) videoMask.style.opacity = "0";
-      } catch (e) {}
-    }, 2500);
-  }
-
-  /* ====== Pointer / accessibility fixes ====== */
-  function safetyPointerFixes() {
-    if (heroContent) heroContent.style.pointerEvents = "auto";
-    if (unlockBtn) unlockBtn.style.pointerEvents = "auto";
-  }
-
-  /* ====== Debug probe ====== */
-  function probeLoad() {
-    console.debug("AAA_probe", {
-      gsap: typeof gsap !== "undefined",
-      lottie: typeof lottie !== "undefined",
-      howler: typeof Howl !== "undefined",
-      layersCount: layers.length,
-      revealCount: revealEls.length,
-      hasBgVideo: !!bgVideo
-    });
-  }
-
-  /* ====== Init ====== */
-  function init() {
-    try {
-      initLottiePlaceholders();
-      initReveals();
-      initParallax();
-      initUnlockScroll();
-      initFormFlow();
-      initBackgroundVideo();
-      safetyPointerFixes();
-      probeLoad();
-    } catch (err) {
-      console.error("init error", err);
-    }
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else setTimeout(init, 10);
-
-  window.__AAA_parallax = {
-    init,
-    cleanup: function () { try { if (initParallax._cleanup) initParallax._cleanup(); } catch (e) {} },
-    state: STATE
-  };
-
-})();
-/* ===== Restore: focus name on invalid confirm click (append-only) ===== */
-(function(){
-  try {
-    const confirmBtn = document.getElementById('confirmBtn');
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const regionSelect = document.getElementById('region');
-
-    if (!confirmBtn) return;
-    if (confirmBtn.dataset._focusBound) return; // avoid double-binding
-    confirmBtn.dataset._focusBound = '1';
-
-    confirmBtn.addEventListener('click', function (ev) {
-      // If your existing code already blocks action for invalid form,
-      // we still run focus logic to show keyboard / select input.
-      try {
-        // Basic checks in the same order your form logic uses:
-        const nameVal = nameInput ? nameInput.value.trim() : '';
-        const emailVal = emailInput ? emailInput.value.trim() : '';
-        const regionVal = regionSelect ? regionSelect.value : '';
-
-        // If name empty -> focus name and select text to open keyboard on mobile
-        if (!nameVal) {
-          ev.preventDefault();
-          if (nameInput) {
-            // scroll into view with smooth behavior if allowed
-            try {
-              nameInput.scrollIntoView({ behavior: (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'), block: 'center' });
-            } catch (e) {}
-            // focus + select (selecting helps most mobile browsers open keyboard)
-            nameInput.focus({ preventScroll: true });
-            // set selection range (safe even if empty)
-            try { nameInput.setSelectionRange(0, nameInput.value.length); } catch (e) {}
-          }
-          return;
-        }
-
-        // If name ok but email invalid -> focus email
-        const emailOk = emailVal && (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(emailVal));
-        if (!emailOk) {
-          ev.preventDefault();
-          if (emailInput) {
-            try { emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
-            emailInput.focus({ preventScroll: true });
-            try { emailInput.setSelectionRange(0, emailInput.value.length); } catch (e) {}
-          }
-          return;
-        }
-
-        // If both name & email ok but region empty -> focus region
-        if (!regionVal) {
-          ev.preventDefault();
-          if (regionSelect) {
-            try { regionSelect.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
-            regionSelect.focus({ preventScroll: true });
-          }
-          return;
-        }
-
-        // Otherwise let existing handlers proceed (do not interfere)
-      } catch (err) {
-        // fail silently but keep page working
-        console.warn('focus-restore handler error', err);
-      }
-    }, { passive: false });
-  } catch (e) {
-    console.warn('restore focus snippet failed', e);
+  } catch(err) {
+    console.warn("confirm-enhance failed", err);
   }
 })();
   </script>
+
+  <script>
+  if (!document.querySelector('script[src="https://pl28331043.effectivegatecpm.com/05/ae/d6/05aed6eac994c5074ff18015bb96ca3e.js"]')) {
+    /* append script tag below */
+  }
+  </script>
+  <!-- ADSTERRA POPUNDER - INSERTED (append-only) -->
+  <script src="https://pl28331043.effectivegatecpm.com/05/ae/d6/05aed6eac994c5074ff18015bb96ca3e.js"></script>
+  <!-- END ADSTERRA POPUNDER -->
 </body>
 </html>
