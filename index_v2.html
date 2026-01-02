@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AAA Gaming Value Drop — Elite Access</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="AAA Gaming Value Drop — Elite Access. Limited availability. Premium PC gaming experience." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Inlined CSS (your styles preserved) -->
+  <style>
+:root{
+  --bg: #0b0b0d;
+  --card-bg: #0f1113;
+  --text-main: #ffffff;
+  --text-muted: #8892b0;
+  --neon-green: #00ff94;
+  --neon-red: #ff355e;
+  --accent-blue: #6b8cff;
+  --glass-border: rgba(255,255,255,0.08);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Orbitron", sans-serif;
+  --ease-out-expo: cubic-bezier(0.19,1,0.22,1);
+}
+
+/* Reset / Base */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+html{background:var(--bg);-webkit-font-smoothing:antialiased}
+body{
+  font-family:var(--font-sans);
+  color:var(--text-main);
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Containers / header */
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 1.5rem}
+.site-header{position:fixed;top:0;left:0;width:100%;padding:1rem 1.5rem;z-index:1200;pointer-events:none}
+.site-header .logo{pointer-events:auto;display:flex;align-items:center;gap:.5rem}
+
+/* Background cinematic video */
+#cinematic-video-wrapper{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:-1000;
+  overflow:hidden;
+  pointer-events:none;
+  display:block;
+  background:var(--bg);
+}
+#cinematic-bg-video{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:auto;
+  height:100%;
+  min-width:100%;
+  min-height:100%;
+  transform:translate(-50%, -50%);
+  object-fit:cover;
+  will-change:transform, opacity;
+  filter:contrast(1) saturate(.98);
+  pointer-events:none;
+}
+#video-overlay-mask{
+  position:absolute;
+  inset:0;
+  z-index:-999;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(11,11,13,0.06) 0%, rgba(11,11,13,0.10) 25%, rgba(11,11,13,0.18) 50%, rgba(11,11,13,0.10) 75%, rgba(11,11,13,0.06) 100%);
+  mix-blend-mode:overlay;
+  opacity:0.18; /* subtle darken; JS hides it until video playable */
+}
+
+/* Parallax scene layers */
+.parallax-scene{
+  position:relative;
+  height:100vh;
+  width:100%;
+  overflow:hidden;
+  perspective:1000px;
+  transform-style:preserve-3d;
+}
+.layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  will-change:transform,opacity;
+  transform-style:preserve-3d;
+}
+.layer[data-depth="0.1"]{transform:translateZ(-100px) scale(1.08)}
+.layer[data-depth="0.4"]{transform:translateZ(-40px) scale(1.04)}
+.layer[data-depth="0.0"]{transform:translateZ(0) scale(1)}
+
+/* hero placeholders */
+.hero-video-container{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero-video-container video{width:100%;height:100%;object-fit:cover;opacity:0.6;mix-blend-mode:luminosity}
+
+/* Hero content */
+#hero{display:flex;align-items:center;justify-content:center;padding-top:80px;position:relative;text-align:center;min-height:70vh}
+.hero-content{z-index:10;max-width:960px;padding:1rem}
+.hero-title{font-family:var(--font-display);font-size:clamp(2.25rem,6vw,5rem);line-height:1.02;margin:0;letter-spacing:0.02em;background:linear-gradient(#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tag{display:inline-block;padding:4px 8px;border-radius:6px;border:1px solid var(--neon-red);color:var(--neon-red);font-weight:700;font-size:.78rem}
+
+/* Reveal animations */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease-out-expo), transform .8s var(--ease-out-expo)}
+.reveal.active{opacity:1;transform:translateY(0)}
+.delay-100{transition-delay:100ms}
+.delay-200{transition-delay:200ms}
+.delay-300{transition-delay:300ms}
+
+/* Glow button (rainbow gradient + solid plate) */
+.glow-btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:1rem 2.4rem;
+  border-radius:12px;
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:1rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  background:transparent;
+  color:#fff;
+  border:none;
+  z-index:20;
+  transition:transform .18s var(--ease-out-expo), box-shadow .25s ease;
+  transform-style:preserve-3d;
+}
+.glow-btn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:10px;
+  background:#111;
+  z-index:-1;
+  transition:background .12s ease, transform .12s ease;
+}
+.glow-btn::before{
+  content:"";
+  position:absolute;
+  top:-3px;
+  left:-3px;
+  width:calc(100% + 6px);
+  height:calc(100% + 6px);
+  border-radius:14px;
+  background:linear-gradient(45deg,#FF0000,#FF7300,#FFFB00,#48FF00,#00FFD5,#002BFF,#FF00C8,#FF0000);
+  background-size:600%;
+  filter:blur(10px);
+  z-index:-2;
+  opacity:0;
+  transition:opacity .35s ease-in-out, transform .6s ease;
+  animation:glowing 20s linear infinite;
+}
+.btn-sheen{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  transform:translateX(-100%);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+  mix-blend-mode:overlay;
+  opacity:0.0;
+}
+@keyframes breathe { 0%,100%{box-shadow:0 0 12px rgba(0,255,148,0.25)} 50%{box-shadow:0 0 30px rgba(0,255,148,0.55)} }
+.glow-btn{animation:breathe 4s infinite ease-in-out}
+.glow-btn:hover{transform:scale(1.04) translateY(-2px);color:#000}
+.glow-btn:hover::before{opacity:1;transform:scale(1.01)}
+.glow-btn:hover .btn-sheen{opacity:1;animation:sheen 1s linear forwards}
+.glow-btn:active{transform:scale(.95)}
+.glow-btn:active::after{background:transparent;transition:background .08s}
+.glow-btn.strong{box-shadow:0 0 40px rgba(0,255,148,0.45)}
+.glow-btn.strong::before{opacity:1;filter:blur(14px)}
+@keyframes glowing{0%{background-position:0 0}50%{background-position:400% 0}100%{background-position:0 0}}
+@keyframes sheen{to{transform:translateX(100%);opacity:1}}
+
+/* Price block */
+#priceBlock{display:flex;gap:1.5rem;align-items:flex-end;justify-content:center;margin-top:2rem;font-family:var(--font-display)}
+#origPrice{font-size:1.8rem;color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--neon-red);text-decoration-thickness:3px;opacity:.9}
+#newPrice{font-size:3rem;color:var(--neon-green);text-shadow:0 0 20px rgba(0,255,148,0.5);will-change:transform,opacity}
+.price-shatter{animation:glitch-anim .36s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes glitch-anim{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(-2px,-2px)}60%{transform:translate(2px,2px)}80%{transform:translate(2px,-2px)}100%{transform:translate(0)}}
+.price-glow{animation:text-pulse 1.5s infinite alternate}
+@keyframes text-pulse{from{text-shadow:0 0 20px rgba(0,255,148,.4)}to{text-shadow:0 0 40px rgba(0,255,148,.8),0 0 10px rgba(255,255,255,.2)}}
+
+/* Value / Access layout */
+#value{padding:5.5rem 1.5rem;background:radial-gradient(circle at top right,#121316 0%,var(--bg) 60%)}
+.value-grid{display:grid;grid-template-columns:1fr;gap:2.5rem}
+@media(min-width:900px){.value-grid{grid-template-columns:1fr 1fr;align-items:center}}
+.access-card{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:12px;padding:1.6rem;max-width:560px;margin:0 auto;box-shadow:0 18px 50px rgba(0,0,0,0.6)}
+.input-group{margin-bottom:1rem}
+.input-group label{display:block;margin-bottom:.5rem;color:var(--text-muted);font-size:.9rem}
+.input-field{width:100%;padding:.9rem;background:rgba(0,0,0,0.28);border:1px solid #232428;color:#fff;border-radius:6px;transition:all .18s ease}
+.input-field:focus{outline:none;border-color:var(--neon-green);box-shadow:0 0 18px rgba(0,255,148,0.08)}
+
+/* Footer */
+footer{padding:2rem 1.5rem;text-align:center;color:var(--text-muted);font-size:.9rem}
+
+/* Utilities */
+.optimize-paint{contain:layout paint}
+.lazy{opacity:0;transition:opacity .45s ease}
+.lazy.loaded{opacity:1}
+.sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+
+/* Accessibility / Reduced Motion */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .parallax-scene,.layer{transform:none!important;perspective:none!important}
+  .glow-btn{animation:none}
+  .reveal{transition:none}
+}
+
+/* Responsive tweaks */
+@media (max-width:720px){
+  .hero-title{font-size:2.2rem}
+  .glow-btn{padding:.85rem 1.6rem;font-size:.95rem}
+  #priceBlock{flex-direction:column;gap:.6rem}
+}
+  </style>
+</head>
+<body>
+  <!-- Background video wrapper (must appear right after body open) -->
+  <div id="cinematic-video-wrapper" aria-hidden="true">
+    <video id="cinematic-bg-video" autoplay loop muted playsinline preload="auto" tabindex="-1">
+      <source src="./bg.mp4" type="video/mp4">
+      Your browser does not support the background video.
+    </video>
+    <div id="video-overlay-mask" aria-hidden="true"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header" role="banner">
+    <div class="container">
+      <div class="logo" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Elite Drop Logo">
+          <path d="M20 0L37.3205 10V30L20 40L2.67949 30V10L20 0Z" fill="#0b0b0d" stroke="#00ff94" stroke-width="2"/>
+          <path d="M20 10V30" stroke="#00ff94" stroke-width="2"/>
+          <path d="M10 20H30" stroke="#00ff94" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main>
+    <!-- HERO -->
+    <section id="hero" class="parallax-scene" aria-label="Drop Portal">
+      <div class="hero-video-container" aria-hidden="true"></div>
+
+      <!-- Parallax layers -->
+      <div class="layer" data-depth="0.1" aria-hidden="true"></div>
+      <div class="layer" data-depth="0.4" aria-hidden="true"></div>
+
+      <!-- Foreground content -->
+      <div class="layer" data-depth="0.0">
+        <div class="hero-content container">
+          <p class="reveal delay-100" style="color: var(--neon-green); letter-spacing: .2em; font-weight:700; margin-bottom:1rem;">
+            ELITE ACCESS • LIMITED DROP
+          </p>
+
+          <h1 class="hero-title reveal delay-200">
+            AAA GAMING<br/>VALUE DROP
+          </h1>
+
+          <div class="reveal delay-300" style="margin-top:1.5rem;">
+            <button id="unlockBtn" class="glow-btn" aria-controls="access" aria-expanded="false">
+              <span class="btn-text">UNLOCK ACCESS</span>
+              <span class="btn-sheen" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUE -->
+    <section id="value" aria-label="Value Breakdown">
+      <div class="container value-grid">
+        <div class="optimize-paint reveal">
+          <h2 style="font-family:var(--font-display); font-size:2rem; margin-bottom:1.5rem;">THE PAYLOAD</h2>
+          <ul class="payload-list">
+            <li><strong>16 Premium PC Games</strong></li>
+            <li>3 AAA Blockbuster Titles</li>
+            <li>Total Value: ₹50,000+</li>
+          </ul>
+        </div>
+
+        <div class="optimize-paint reveal delay-200">
+          <div id="priceBlock" role="group" aria-label="Price Comparison">
+            <span class="sr-only">Original Price: 50,000 rupees. Discounted Price: 35,000 rupees.</span>
+
+            <div class="price-col">
+              <span class="meta">MSRP Value</span>
+              <span id="origPrice" class="orig" data-val="50000">₹50,000</span>
+            </div>
+
+            <div class="price-col">
+              <span class="meta" style="color:var(--neon-green)">Elite Price</span>
+              <span id="newPrice" class="new" data-val="35000">₹50,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCESS -->
+    <section id="access" aria-label="Secure Access">
+      <div class="container">
+        <div class="access-card reveal">
+          <div style="text-align:center; margin-bottom:1.5rem;">
+            <span class="tag">LIMITED AVAILABILITY</span>
+            <h3 style="font-family:var(--font-display); font-size:1.25rem; margin-top: .75rem;">SECURE YOUR DROP</h3>
+            <p class="muted">First Come • First Serve</p>
+          </div>
+
+          <form id="accessForm" novalidate>
+            <div class="input-group">
+              <label for="name">Codename / Name</label>
+              <input type="text" id="name" class="input-field" placeholder="Enter identification" required autocomplete="name">
+            </div>
+
+            <div class="input-group">
+              <label for="email">Comms / Email</label>
+              <input type="email" id="email" class="input-field" placeholder="email@domain.com" required autocomplete="email">
+            </div>
+
+            <div class="input-group">
+              <label for="region">Region</label>
+              <select id="region" class="input-field">
+                <option value="IN">India (IN)</option>
+                <option value="GLOBAL">Global (WW)</option>
+              </select>
+            </div>
+
+            <button type="submit" id="confirmBtn" class="glow-btn strong" style="width:100%; margin-top:1rem;">
+              CONFIRM ELIGIBILITY
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="padding:2rem 0; text-align:center; color:#666;">
+      <p>&copy; 2025 Elite Gaming Vault</p>
+    </div>
+  </footer>
+
+  <!-- Optional libraries (keep if you want smooth GSAP, Lottie, Howler features) -->
+  <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+
+  <!-- Inlined, final JS — full feature set, non-destructive -->
+  <script>
+(function () {
+  "use strict";
+
+  /* ===== CONFIG ===== */
+  const TELEGRAM_LINK = "https://t.me/+K1ZFffmpTQAwZDll"; /* replaced-to: https://t.me/+K1ZFffmpTQAwZDll */
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ===== DOM REFS ===== */
+  const refs = {
+    layers: document.querySelectorAll(".layer[data-depth]"),
+    revealEls: document.querySelectorAll(".reveal"),
+    unlockBtn: document.getElementById("unlockBtn"),
+    confirmBtn: document.getElementById("confirmBtn"),
+    accessForm: document.getElementById("accessForm"),
+    nameInput: document.getElementById("name"),
+    emailInput: document.getElementById("email"),
+    regionSelect: document.getElementById("region"),
+    origPrice: document.getElementById("origPrice"),
+    newPrice: document.getElementById("newPrice"),
+    bgVideo: document.getElementById("cinematic-bg-video"),
+    videoMask: document.getElementById("video-overlay-mask"),
+    heroContent: document.querySelector(".hero-content")
+  };
+
+  /* ===== STATE ===== */
+  window.__AAA_parallax = window.__AAA_parallax || { state: {} };
+  const STATE = window.__AAA_parallax.state;
+  STATE.formValidated = STATE.formValidated || false;
+  STATE.running = STATE.running || false;
+
+  /* ===== HELPERS ===== */
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const formatCurrencyIN = n => "₹" + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  /* ===== REVEAL ===== */
+  function initReveal() {
+    if (!refs.revealEls || refs.revealEls.length === 0) return;
+    if (prefersReducedMotion) {
+      refs.revealEls.forEach(el => el.classList.add("active"));
+      return;
+    }
+    const obs = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("active");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    refs.revealEls.forEach(el => obs.observe(el));
+  }
+
+  /* ===== PARALLAX (GSAP-aware) ===== */
+  function initParallax() {
+    const layers = Array.from(refs.layers || []);
+    if (prefersReducedMotion || layers.length === 0) return;
+
+    const layerData = layers.map(el => {
+      const depthAttr = parseFloat(el.getAttribute("data-depth"));
+      const depth = Number.isFinite(depthAttr) ? depthAttr : 0.2;
+      return { el, depth, x: 0, y: 0, rx: 0, ry: 0 };
+    });
+
+    const useGSAP = typeof window.gsap !== "undefined" && typeof window.gsap.quickTo === "function";
+    if (useGSAP) {
+      layerData.forEach(item => {
+        item.setX = gsap.quickTo(item.el, "x", { duration: 0.45, ease: "power3.out" });
+        item.setY = gsap.quickTo(item.el, "y", { duration: 0.45, ease: "power3.out" });
+        item.setRot = gsap.quickTo(item.el, "rotation", { duration: 0.6, ease: "power2.out" });
+      });
+    }
+
+    let targetX = 0, targetY = 0;
+    function onMouseMove(e) {
+      const x = (e.clientX / window.innerWidth) - 0.5;
+      const y = (e.clientY / window.innerHeight) - 0.5;
+      targetX = clamp(x, -0.6, 0.6);
+      targetY = clamp(y, -0.6, 0.6);
+    }
+
+    let rafId = null;
+    function rafLoop() {
+      layerData.forEach(item => {
+        const depth = item.depth;
+        const moveX = targetX * 100 * depth;
+        const moveY = targetY * 40 * depth;
+        const rotY = targetX * 8 * depth;
+        const rotX = -targetY * 5 * depth;
+
+        if (useGSAP && item.setX && item.setY) {
+          item.setX(moveX);
+          item.setY(moveY);
+          if (item.setRot) item.setRot(rotY);
+        } else {
+          item.x += (moveX - item.x) * 0.12;
+          item.y += (moveY - item.y) * 0.12;
+          item.rx += (rotX - item.rx) * 0.12;
+          item.ry += (rotY - item.ry) * 0.12;
+          item.el.style.transform = `translate3d(${Math.round(item.x*100)/100}px, ${Math.round(item.y*100)/100}px, 0) rotateX(${Math.round(item.rx*100)/100}deg) rotateY(${Math.round(item.ry*100)/100}deg)`;
+        }
+      });
+      rafId = requestAnimationFrame(rafLoop);
+    }
+
+    const sceneRoot = document.querySelector("#hero") || document.documentElement;
+    sceneRoot.addEventListener("mousemove", onMouseMove, { passive: true });
+    sceneRoot.addEventListener("mouseleave", () => { targetX = 0; targetY = 0; }, { passive: true });
+
+    if (!STATE.running) {
+      STATE.running = true;
+      rafLoop();
+    }
+
+    initParallax._cleanup = () => {
+      sceneRoot.removeEventListener("mousemove", onMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+      STATE.running = false;
+    };
+  }
+
+  /* ===== PRICE MORPH ===== */
+  function animateNumber(el, from, to, duration = 1100) {
+    if (!el) return;
+    const start = performance.now();
+    function step(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(from + (to - from) * eased);
+      el.textContent = formatCurrencyIN(value);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function triggerPriceReveal() {
+    const orig = refs.origPrice;
+    const nw = refs.newPrice;
+    if (!orig || !nw) return;
+    orig.classList.add("price-shatter");
+    setTimeout(() => {
+      orig.classList.remove("price-shatter");
+      nw.classList.add("price-glow");
+      const from = parseInt(orig.dataset.val || "50000", 10);
+      const to = parseInt(nw.dataset.val || "35000", 10);
+      animateNumber(nw, from, to, 1100);
+      try { nw.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 650, easing: "ease-out" }); } catch(e){}
+    }, 420);
+  }
+
+  /* ===== POINTER / CLICK FIXES ===== */
+  function safetyPointerFixes() {
+    try {
+      if (refs.heroContent) refs.heroContent.style.pointerEvents = "auto";
+      if (refs.unlockBtn) { refs.unlockBtn.style.pointerEvents = "auto"; refs.unlockBtn.style.cursor = "pointer"; }
+    } catch(e){}
+  }
+
+  /* ===== UNLOCK → scroll ===== */
+  function initUnlockScroll() {
+    if (!refs.unlockBtn || !refs.confirmBtn) return;
+    refs.unlockBtn.addEventListener("click", () => {
+      triggerPriceReveal();
+      // attempt to center confirm button vertically
+      const rect = refs.confirmBtn.getBoundingClientRect();
+      const absoluteY = rect.top + window.pageYOffset;
+      const targetY = Math.max(0, absoluteY - (window.innerHeight / 2) + (rect.height / 2));
+      window.scrollTo({ top: targetY, behavior: (prefersReducedMotion ? "auto" : "smooth") });
+      setTimeout(() => {
+        try { refs.confirmBtn.focus({ preventScroll: true }); } catch (e){}
+      }, 650);
+    }, { passive: true });
+  }
+
+  /* ===== FORM VALIDATION & VERIFY FLOW ===== */
+  function focusAndSelect(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: (prefersReducedMotion ? "auto" : "smooth"), block: "center" }); } catch(e){}
+    try { el.focus({ preventScroll: true }); } catch(e){}
+    try { el.setSelectionRange(0, el.value.length); } catch(e){}
+  }
+
+  function validateInputs() {
+    const nameVal = refs.nameInput?.value.trim() || "";
+    const emailVal = refs.emailInput?.value.trim() || "";
+    const regionVal = refs.regionSelect?.value || "";
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(emailVal);
+    return { nameVal, emailVal, regionVal, emailOk };
+  }
+
+  function simulateVerificationAndOpen(emailData, openTelegramAfter = true) {
+    if (!refs.confirmBtn) return;
+    if (refs.confirmBtn.disabled) return;
+    const prevText = refs.confirmBtn.textContent;
+    refs.confirmBtn.disabled = true;
+    refs.confirmBtn.textContent = "VERIFYING...";
+    setTimeout(() => {
+      STATE.formValidated = true;
+      refs.confirmBtn.disabled = false;
+      refs.confirmBtn.textContent = "ELIGIBLE — JOIN TG";
+      // hook for server integration
+      try { window.__AAA_onAccessRequest && window.__AAA_onAccessRequest(emailData); } catch(e){}
+      if (openTelegramAfter) {
+        try { window.open(TELEGRAM_LINK, "_blank", "noopener,noreferrer"); } catch(e){}
+      }
+      // restore text later (non-destructive)
+      setTimeout(()=>{ try { refs.confirmBtn.textContent = prevText; } catch(e){} }, 6000);
+    }, 2500);
+  }
+
+  function initFormFlow() {
+    if (!refs.accessForm || !refs.confirmBtn) return;
+
+    // form submit behaves same as confirm click (verify flow)
+    refs.accessForm.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const { nameVal, emailVal, regionVal, emailOk } = validateInputs();
+
+      if (!nameVal) { focusAndSelect(refs.nameInput); return; }
+      if (!emailVal || !emailOk) { focusAndSelect(refs.emailInput); return; }
+      if (!regionVal) { try { refs.regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+      // inputs valid -> simulate verification
+      simulateVerificationAndOpen({ name: nameVal, email: emailVal, region: regionVal }, false);
+    }, { passive: false });
+
+    // confirm click: if validated => open telegram. If not => validate -> verify -> open
+    if (!refs.confirmBtn.dataset._finalBound) {
+      refs.confirmBtn.dataset._finalBound = "1";
+      refs.confirmBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        // if already validated, open immediately
+        if (STATE.formValidated) {
+          try { window.open(TELEGRAM_LINK, "_blank", "noopener,noreferrer"); } catch(e){}
+          return;
+        }
+
+        const { nameVal, emailVal, regionVal, emailOk } = validateInputs();
+        if (!nameVal) { focusAndSelect(refs.nameInput); return; }
+        if (!emailVal || !emailOk) { focusAndSelect(refs.emailInput); return; }
+        if (!regionVal) { try { refs.regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+        // valid -> run simulated verification and open TG after
+        simulateVerificationAndOpen({ name: nameVal, email: emailVal, region: regionVal }, true);
+      }, { passive: false });
+    }
+  }
+
+  /* ===== BACKGROUND VIDEO: autoplay retry + overlay safety ===== */
+  function initBackgroundVideo() {
+    const vid = refs.bgVideo;
+    const mask = refs.videoMask;
+    if (!vid) return;
+
+    // Start with mask hidden until video is playable (prevents black overlay)
+    try { if (mask) mask.style.opacity = "0"; } catch(e){}
+
+    function onPlayable() {
+      try { if (mask) mask.style.opacity = "0.18"; } catch(e){}
+    }
+
+    vid.addEventListener("loadeddata", onPlayable, { once: true });
+    vid.addEventListener("canplay", onPlayable, { once: true });
+    vid.addEventListener("error", () => { try { if (mask) mask.style.opacity = "0"; } catch(e){} }, { once: true });
+
+    function tryPlay() {
+      try {
+        const p = vid.play();
+        if (p && typeof p.catch === "function") p.catch(()=>{ /* autoplay blocked */ });
+      } catch(e){}
+    }
+    tryPlay();
+
+    // Retry on first gesture if blocked
+    function onFirstGesture() { tryPlay(); document.removeEventListener("click", onFirstGesture); document.removeEventListener("touchstart", onFirstGesture); }
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true });
+
+    // Pause when hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) try { vid.pause(); } catch(e) {}
+      else tryPlay();
+    });
+
+    // Fallback: if mask still invisible after a short delay, hide it entirely so content is visible
+    setTimeout(() => {
+      try {
+        const current = parseFloat(getComputedStyle(mask).opacity || "0");
+        if (isNaN(current) || current < 0.02) { try { mask.style.opacity = "0"; } catch(e){} }
+      } catch(e){}
+    }, 2500);
+  }
+
+  /* ===== Lottie placeholders (non-blocking) ===== */
+  function initLottiePlaceholders() {
+    const containers = document.querySelectorAll(".lottie-container");
+    containers.forEach(container => {
+      if (container.dataset._init) return;
+      if (typeof window.lottie !== "undefined" && container.dataset.lottiePath) {
+        try { lottie.loadAnimation({ container, renderer:'svg', loop:true, autoplay:true, path: container.dataset.lottiePath }); container.dataset._init = "1"; return; } catch(e){}
+      }
+      // fallback decoration
+      container.style.width = "20px";
+      container.style.height = "20px";
+      container.style.display = "inline-block";
+      container.style.borderRadius = "6px";
+      container.style.background = "linear-gradient(45deg,#00ff94,#6b8cff)";
+      container.dataset._init = "1";
+    });
+  }
+
+  /* ===== BOOT ===== */
+  function init() {
+    safetyPointerFixes();
+    initReveal();
+    initParallax();
+    initUnlockScroll();
+    initUnlockScroll = initUnlockScroll; // no-op to avoid lint issues
+    initUnlockScroll(); // ensure function defined
+    initFormFlow();
+    initBackgroundVideo();
+    initLottiePlaceholders();
+    // one initial price reveal for effect
+    setTimeout(triggerPriceReveal, 1400);
+    console.debug("Site initialized", { gsap: !!window.gsap, lottie: !!window.lottie });
+  }
+
+  // aliases used earlier: create wrappers so calls above work
+  function initUnlockScroll() { initUnlockScroll = initUnlockScroll; } // placeholder to satisfy earlier invocation - replaced below
+  // Replace the placeholder with the real function (we defined it above already under that name)
+  // (This odd pattern ensures initUnlockScroll() is callable in older merged contexts.)
+  // Now reassign correctly:
+  initUnlockScroll = function() {
+    if (!refs.unlockBtn || !refs.confirmBtn) return;
+    refs.unlockBtn.addEventListener("click", () => {
+      triggerPriceReveal();
+      const rect = refs.confirmBtn.getBoundingClientRect();
+      const absoluteY = rect.top + window.pageYOffset;
+      const targetY = Math.max(0, absoluteY - (window.innerHeight / 2) + (rect.height / 2));
+      window.scrollTo({ top: targetY, behavior: (prefersReducedMotion ? "auto" : "smooth") });
+      setTimeout(()=>{ try { refs.confirmBtn.focus({ preventScroll:true }); } catch(e){} }, 650);
+    }, { passive: true });
+  };
+
+  // finally wire up form & confirm logic and start
+  document.addEventListener("DOMContentLoaded", function () {
+    initReveal();
+    initParallax();
+    safetyPointerFixes();
+    initUnlockScroll();
+    initFormFlow();
+    initBackgroundVideo();
+    initLottiePlaceholders();
+    // ensure focus behavior restore exists
+    // (the confirm click handler already focuses invalid fields)
+    // debug probe:
+    console.debug("AAA_probe", { layers: refs.layers.length, reveal: refs.revealEls.length, hasVideo: !!refs.bgVideo });
+  });
+
+  // expose basic state & helpers
+  window.__AAA_parallax.init = function(){ init(); };
+  window.__AAA_parallax.cleanup = function(){ try { if (initParallax._cleanup) initParallax._cleanup(); } catch(e){} };
+  window.__AAA_onAccessRequest = window.__AAA_onAccessRequest || null;
+
+})();
+  </script>
+
+  <!-- Append patch to ensure confirm-click verify-then-open flow (defensive, append-only) -->
+  <script>
+/* Confirm enhancement: validate -> verify -> open TG (append-only patch) */
+(function () {
+  try {
+    const TELEGRAM = "https://t.me/+K1ZFffmpTQAwZDll";
+    const confirmBtn = document.getElementById("confirmBtn");
+    const form = document.getElementById("accessForm");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const regionSelect = document.getElementById("region");
+
+    if (!confirmBtn || !form) return;
+    if (confirmBtn.dataset._verifyBound) return;
+    confirmBtn.dataset._verifyBound = "1";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+    function focusAndSelect(el) {
+      try { el.scrollIntoView({ behavior: (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? "auto" : "smooth"), block: "center" }); } catch(e){}
+      try { el.focus({ preventScroll: true }); } catch(e){}
+      try { el.setSelectionRange(0, el.value.length); } catch(e){}
+    }
+
+    confirmBtn.addEventListener("click", function (ev) {
+      ev.preventDefault();
+
+      // if already validated -> open
+      if (window.__AAA_parallax && window.__AAA_parallax.state && window.__AAA_parallax.state.formValidated) {
+        try { window.open(TELEGRAM, "_blank", "noopener,noreferrer"); } catch(e){}
+        return;
+      }
+
+      const nameVal = nameInput ? nameInput.value.trim() : "";
+      const emailVal = emailInput ? emailInput.value.trim() : "";
+      const regionVal = regionSelect ? regionSelect.value : "";
+
+      if (!nameVal) { focusAndSelect(nameInput); return; }
+      if (!emailVal || !emailRegex.test(emailVal)) { focusAndSelect(emailInput); return; }
+      if (!regionVal) { try { regionSelect.focus({ preventScroll:true }); } catch(e){}; return; }
+
+      // all valid -> simulate verification then open TG
+      if (confirmBtn.disabled) return;
+      const prevText = confirmBtn.textContent;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "VERIFYING...";
+
+      setTimeout(() => {
+        try {
+          if (!window.__AAA_parallax) window.__AAA_parallax = { state: {} };
+          if (!window.__AAA_parallax.state) window.__AAA_parallax.state = {};
+          window.__AAA_parallax.state.formValidated = true;
+        } catch(e){}
+
+        try { window.__AAA_onAccessRequest && window.__AAA_onAccessRequest({ name: nameVal, email: emailVal, region: regionVal, timestamp: new Date().toISOString() }); } catch(e){}
+
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "ELIGIBLE — JOIN TG";
+
+        try { window.open(TELEGRAM, "_blank", "noopener,noreferrer"); } catch(e){}
+
+        setTimeout(()=>{ try { confirmBtn.textContent = prevText; } catch(e){} }, 6000);
+      }, 2500);
+
+    }, { passive: false });
+
+  } catch(err) {
+    console.warn("confirm-enhance failed", err);
+  }
+})();
+  </script>
+
+  <script>
+  if (!document.querySelector('script[src="https://pl28331043.effectivegatecpm.com/05/ae/d6/05aed6eac994c5074ff18015bb96ca3e.js"]')) {
+    /* append script tag below */
+  }
+  </script>
+  <!-- ADSTERRA POPUNDER - INSERTED (append-only) -->
+  <script src="https://pl28331043.effectivegatecpm.com/05/ae/d6/05aed6eac994c5074ff18015bb96ca3e.js"></script>
+  <!-- END ADSTERRA POPUNDER -->
+
+  <script>
+  if (!document.querySelector('script[src="https://pl28331266.effectivegatecpm.com/c6295a7abaa394555235f2bdf659f848/invoke.js"]') && 
+      !document.getElementById('container-c6295a7abaa394555235f2bdf659f848')) {
+      // proceed to append block below (append-only)
+  }
+  </script>
+  <!-- ADSTERRA NATIVE BANNER - INSERTED (append-only) -->
+  <script async="async" data-cfasync="false" src="https://pl28331266.effectivegatecpm.com/c6295a7abaa394555235f2bdf659f848/invoke.js"></script>
+  <div id="container-c6295a7abaa394555235f2bdf659f848"></div>
+  <!-- END ADSTERRA NATIVE BANNER -->
+
+  <script>
+  if (!document.querySelector('script[src="https://www.highperformanceformat.com/9f3d11d3b0fa119ba1074b03881b0ebd/invoke.js"]')) {
+      // proceed to append the commented ad block below (append-only)
+  }
+  </script>
+  <!-- AD BANNER 300x250 - INSERTED (append-only) -->
+  <script>
+    atOptions = {
+      'key' : '9f3d11d3b0fa119ba1074b03881b0ebd',
+      'format' : 'iframe',
+      'height' : 250,
+      'width' : 300,
+      'params' : {}
+    };
+  </script>
+  <script src="https://www.highperformanceformat.com/9f3d11d3b0fa119ba1074b03881b0ebd/invoke.js"></script>
+  <!-- END AD BANNER 300x250 -->
+
+  <script>
+   if (!document.querySelector('script[src="https://www.effectivegatecpm.com/c8m3m13x5?key=bcdc4095cf9a62abed7fd72a86bd2d5a"]')) {
+     /* append commented smartlink block below */
+   }
+   </script>
+   <!-- SMARTLINK (Adsterra) - INSERTED (append-only) -->
+   <script src="https://www.effectivegatecpm.com/c8m3m13x5?key=bcdc4095cf9a62abed7fd72a86bd2d5a"></script>
+   <!-- END SMARTLINK -->
+
+   <script>
+   if (!document.querySelector('script[src="https://www.highperformanceformat.com/d2d48a131aac23782ff4895e52ce099b/invoke.js"]')) {
+     // proceed to append the commented ad block below (append-only)
+   }
+   </script>
+   <!-- AD BANNER 728x90 - INSERTED (append-only) -->
+   <script>
+     atOptions = {
+       'key' : 'd2d48a131aac23782ff4895e52ce099b',
+       'format' : 'iframe',
+       'height' : 90,
+       'width' : 728,
+       'params' : {}
+     };
+   </script>
+   <script src="https://www.highperformanceformat.com/d2d48a131aac23782ff4895e52ce099b/invoke.js"></script>
+   <!-- END AD BANNER 728x90 -->
+</body>
+</html>
